@@ -2,14 +2,21 @@
   "version": 2,
   "builds": [
     {
-      "src": "index.js",
-      "use": "@vercel/node"
+      "src": "api/predict.py",
+      "use": "@vercel/python",
+      "config": {
+        "includeFiles": ["api/**/*"],
+        "maxLambdaSize": "15mb"
+      }
     }
   ],
   "routes": [
     {
-      "src": "/(.*)",
-      "dest": "/index.js"
+      "src": "/predict",
+      "dest": "api/predict.py"
     }
-  ]
+  ],
+  "env": {
+    "PYTHON_VERSION": "3.8"
+  }
 }

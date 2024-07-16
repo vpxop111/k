@@ -10,34 +10,35 @@ const port = process.env.PORT || 3001;
 app.use(bodyParser.json());
 app.use(cors());
 
+// POST endpoint for prediction
 app.post("/predict", (req, res) => {
   const message = req.body.message;
-  const modelPath = path.join(__dirname, "scams.pth");
-  const vectorizerPath = path.join(__dirname, "vectt.pkl");
+  const modelPath = process.env.MODEL_PATH || path.join(__dirname, "scams.pth");
+  const vectorizerPath =
+    process.env.VECTORIZER_PATH || path.join(__dirname, "vectt.pkl");
+  const pythonPath = process.env.PYTHON_PATH || "/usr/bin/python3"; // Default Python path
 
-  const pythonPath = process.env.PYTHON_PATH; // Fetch Python path from environment variable
-
-  if (!pythonPath) {
-    const errorMessage = "PYTHON_PATH environment variable is not set.";
-    console.error(errorMessage);
-    res.status(500).send(errorMessage);
-    return;
-  }
+  const pythonArgs = [
+    path.join(__dirname, "predict.py"),
+    message,
+    modelPath,
+    vectorizerPath,
+  ];
 
   let pythonProcess;
 
   try {
-    pythonProcess = spawn(pythonPath, [
-      path.join(__dirname, "predict.py"),
-      message,
-      modelPath,
-      vectorizerPath,
-    ]);
+    pythonProcess = spawn(pythonPath, pythonArgs);
   } catch (error) {
     console.error(`Failed to spawn Python process: ${error.message}`);
     res.status(500).send(`Failed to spawn Python process: ${error.message}`);
     return;
   }
+
+  pythonProcess.on("error", (err) => {
+    console.error(`Python process error: ${err.message}`);
+    res.status(500).send(`Python process error: ${err.message}`);
+  });
 
   pythonProcess.stdout.on("data", (data) => {
     const prediction = data.toString().trim();
@@ -51,6 +52,7 @@ app.post("/predict", (req, res) => {
   });
 });
 
+// Start the server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
