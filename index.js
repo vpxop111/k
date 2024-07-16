@@ -15,8 +15,11 @@ app.post("/predict", (req, res) => {
   const modelPath = path.join(__dirname, "scams.pth");
   const vectorizerPath = path.join(__dirname, "vectt.pkl");
 
-  const pythonProcess = spawn("python3", [
-    "predict.py",
+  // Specify the full path to python3 executable
+  const pythonPath = "/usr/bin/python3"; // Example path for Linux, adjust for your OS
+
+  const pythonProcess = spawn(pythonPath, [
+    path.join(__dirname, "predict.py"),
     message,
     modelPath,
     vectorizerPath,
