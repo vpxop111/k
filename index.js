@@ -16,7 +16,7 @@ app.post("/predict", (req, res) => {
   const vectorizerPath = path.join(__dirname, "vectt.pkl");
 
   // Specify the full path to python3 executable
-  const pythonPath = "/usr/bin/python3"; // Adjust path for your system
+  const pythonPath = "/opt/miniconda3/bin/python3"; // Adjust path for your system
 
   const pythonProcess = spawn(pythonPath, [
     path.join(__dirname, "predict.py"),
