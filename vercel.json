@@ -13,12 +13,7 @@
       }
     }
   ],
-  "routes": [
-    {
-      "src": "/predict",
-      "dest": "predict.py"
-    }
-  ],
+  "routes": [{ "src": "/predict", "dest": "index.js" }],
   "env": {
     "PYTHON_VERSION": "3.8"
   }
