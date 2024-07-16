@@ -6,10 +6,9 @@
       "use": "@vercel/node"
     },
     {
-      "src": "api/predict.py",
+      "src": "predict.py",
       "use": "@vercel/python",
       "config": {
-        "includeFiles": ["api/**/*"],
         "maxLambdaSize": "15mb"
       }
     }
@@ -17,7 +16,7 @@
   "routes": [
     {
       "src": "/predict",
-      "dest": "api/predict.py"
+      "dest": "predict.py"
     }
   ],
   "env": {
