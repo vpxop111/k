@@ -15,48 +15,34 @@ app.post("/predict", (req, res) => {
   const modelPath = path.join(__dirname, "scams.pth");
   const vectorizerPath = path.join(__dirname, "vectt.pkl");
 
-  const pythonPaths = [
-    "/opt/miniconda3/bin/python3",
-    "/opt/homebrew/bin/python3",
-    "/usr/local/bin/python3",
-    "/usr/bin/python3",
-  ];
+  const pythonPath = process.env.PYTHON_PATH; // Fetch Python path from environment variable
 
-  let pythonProcess;
-  let chosenPath = "";
-
-  // Try each Python path until one works
-  for (const pythonPath of pythonPaths) {
-    try {
-      pythonProcess = spawn(pythonPath, [
-        path.join(__dirname, "predict.py"),
-        message,
-        modelPath,
-        vectorizerPath,
-      ]);
-      chosenPath = pythonPath;
-      break; // Exit the loop if spawn succeeds
-    } catch (error) {
-      console.error(
-        `Failed to spawn Python process using ${pythonPath}: ${error.message}`
-      );
-    }
-  }
-
-  if (!pythonProcess) {
-    // If none of the paths worked
-    const errorMessage = `Failed to spawn Python process using any of the paths: ${pythonPaths.join(
-      ", "
-    )}`;
+  if (!pythonPath) {
+    const errorMessage = "PYTHON_PATH environment variable is not set.";
     console.error(errorMessage);
     res.status(500).send(errorMessage);
+    return;
+  }
+
+  let pythonProcess;
+
+  try {
+    pythonProcess = spawn(pythonPath, [
+      path.join(__dirname, "predict.py"),
+      message,
+      modelPath,
+      vectorizerPath,
+    ]);
+  } catch (error) {
+    console.error(`Failed to spawn Python process: ${error.message}`);
+    res.status(500).send(`Failed to spawn Python process: ${error.message}`);
     return;
   }
 
   pythonProcess.stdout.on("data", (data) => {
     const prediction = data.toString().trim();
     const result = prediction === "1" ? "scam" : "ham";
-    res.json({ message, predicted_result: result, python_used: chosenPath });
+    res.json({ message, predicted_result: result, python_used: pythonPath });
   });
 
   pythonProcess.stderr.on("data", (data) => {
